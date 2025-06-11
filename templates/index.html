@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dhurkesh's Assistant</title>
     <link rel="stylesheet" href="{{ url_for('static', path='/styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.5.0/github-markdown.min.css">
 </head>
 <body>
     <div class="chat-container">
@@ -43,8 +44,8 @@
 
         function addMessage(message, sender) {
             const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${sender}-message`;
-            messageDiv.textContent = message;
+            messageDiv.className = `message ${sender}-message markdown-body`;
+            messageDiv.innerHTML = message;
             chatMessages.appendChild(messageDiv);
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
