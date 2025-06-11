@@ -1,0 +1,35 @@
+{
+  "mcp": {
+    "inputs": [
+      {
+        "type": "promptString",
+        "id": "github_token",
+        "description": "GitHub Personal Access Token",
+        "password": true
+      },
+      {
+        "type": "promptString",
+        "id": "groq_api_key",
+        "description": "Groq API Key",
+        "password": true
+      }
+    ],
+    "servers": {
+      "github": {
+        "command": "docker",
+        "args": [
+          "run",
+          "-i",
+          "--rm",
+          "-e", "GITHUB_TOKEN",
+          "-e", "GROQ_API_KEY",
+          "mcp-server"
+        ],
+        "env": {
+          "GITHUB_TOKEN": "${input:github_token}",
+          "GROQ_API_KEY": "${input:groq_api_key}"
+        }
+      }
+    }
+  }
+}

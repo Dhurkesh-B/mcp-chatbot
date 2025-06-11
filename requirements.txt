@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+pydantic
+groq
+requests
+python-dotenv
+langchain-openai
+python-multipart

@@ -1,0 +1,38 @@
+Name: Dhurkesh B
+Title: Python Developer
+
+Objective:
+To leverage my expertise in machine learning, full-stack development, and Docker-based deployment to contribute to innovative projects in a dynamic tech environment. Seeking a challenging role where I can apply my skills in AI and software engineering to develop impactful solutions and further my professional growth.
+
+Contact:
+Email: dhurkeshmyself@gmail.com
+Discord: dhurkeshb
+LinkedIn: https://linkedin.com/in/dhurkeshb
+GitHub: https://github.com/Dhurkesh-B
+Instagram: https://www.instagram.com/dhurkesh_1
+Location: Chennai
+
+About Me:
+A passionate software engineer with a strong background in machine learning, full-stack development,
+and containerized application deployment. With hands-on experience in building and deploying AI solutions.
+
+Education:
+- RMK College of Engineering and Technology (B.Tech in Artificial Intelligence and Data Science, 2022 - 2026, in progress)
+- Tagore Matriculation Higher Secondary School
+- Bharathiyar Matriculation Higher Secondary School
+
+Personal Details:
+- Date of Birth: 30.12.2004
+- Gender: Male
+- Native: Salem District, Attur Taluk, Tamil Nadu
+- Blood Group: B+ve
+
+Hobbies:
+- Carrom
+
+Favorite Movie:
+- Harry Potter
+
+Languages Known:
+- Tamil
+- English

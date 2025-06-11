@@ -1,0 +1,27 @@
+{
+  "mcp": {
+    "inputs": [
+      {
+        "type": "promptString",
+        "id": "rapidapi_key",
+        "description": "RapidAPI Key for LinkedIn Data API",
+        "password": true
+      }
+    ],
+    "servers": {
+      "linkedin": {
+        "command": "docker",
+        "args": [
+          "run",
+          "-i",
+          "--rm",
+          "-e", "RAPIDAPI_KEY",
+          "mcp-server"
+        ],
+        "env": {
+          "RAPIDAPI_KEY": "${input:rapidapi_key}"
+        }
+      }
+    }
+  }
+} 
