@@ -1,10 +1,10 @@
-# MCP Chatbot with RAG and GitHub Integration
+# Model Context Protocol (MCP) Chatbot
 
-A modern chatbot application that combines Retrieval Augmented Generation (RAG) with GitHub integration through a Multi-Channel Platform (MCP). The chatbot can access and provide information from both local content and public GitHub repositories.
+A chatbot implementation that follows the Model Context Protocol specification, combining RAG (Retrieval Augmented Generation) with GitHub integration. This implementation ensures proper context management and memory handling for AI interactions.
 
 ## Features
 
-- 🤖 Interactive chat interface with real-time responses
+- 🤖 MCP-compliant context management
 - 📚 RAG (Retrieval Augmented Generation) for local content search
 - 🔗 GitHub integration for accessing public repository information
 - 💬 WebSocket support for real-time communication
@@ -65,11 +65,37 @@ Create a fine-grained personal access token with the following permissions:
 │   └── images/          # Image assets
 ├── templates/
 │   └── index.html       # Chat interface template
-├── mcp_integration.py   # GitHub integration
-├── rag_integration.py   # RAG functionality
+├── mcp/
+│   ├── __init__.py
+│   ├── protocol.py      # MCP protocol implementation
+│   ├── context.py       # Context management
+│   └── memory.py        # Memory handling
+├── integrations/
+│   ├── __init__.py
+│   ├── github.py        # GitHub integration
+│   └── rag.py          # RAG functionality
 ├── requirements.txt     # Python dependencies
 └── .env                # Environment variables
 ```
+
+## MCP Implementation
+
+This project implements the Model Context Protocol with the following components:
+
+1. Context Management
+   - Structured context storage
+   - Context retrieval and updating
+   - Context persistence
+
+2. Memory Handling
+   - Short-term memory for current session
+   - Long-term memory for persistent storage
+   - Memory retrieval and updating
+
+3. Protocol Compliance
+   - Standardized context format
+   - Proper context injection
+   - Context validation
 
 ## Running the Application
 
@@ -87,7 +113,8 @@ http://localhost:8000
 
 1. The chat interface will appear with a message input field at the bottom
 2. Type your question and press Enter or click the Send button
-3. The chatbot will respond with information from:
+3. The chatbot will respond using:
+   - MCP-compliant context management
    - Local content (RAG)
    - Public GitHub repositories
    - User profile information
@@ -97,6 +124,8 @@ http://localhost:8000
 - `GET /`: Main chat interface
 - `POST /chat`: Send chat messages
 - `WebSocket /ws`: Real-time chat communication
+- `POST /context`: Update context
+- `GET /context`: Retrieve current context
 
 ## Dependencies
 
@@ -125,3 +154,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - Groq for providing the LLM API
 - GitHub for repository access
 - FastAPI for the web framework
+- Model Context Protocol specification

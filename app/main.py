@@ -7,7 +7,9 @@ from pydantic import BaseModel
 from groq import Groq
 import requests
 from dotenv import load_dotenv
-from mcp_integration import MCPIntegration
+from mcp.protocol import MCPProtocol
+from mcp.context import ContextManager
+from mcp.memory import MemoryManager
 from rag_integration import RAGIntegration
 import markdown
 
@@ -21,8 +23,10 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 # Templates
 templates = Jinja2Templates(directory="templates")
 
-# Initialize integrations
-mcp = MCPIntegration()
+# Initialize MCP components
+mcp_protocol = MCPProtocol()
+context_manager = ContextManager(mcp_protocol)
+memory_manager = MemoryManager(mcp_protocol)
 rag = RAGIntegration()
 
 groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
@@ -38,21 +42,42 @@ async def get_chat_page(request: Request):
 async def chat(message: ChatMessage):
     try:
         # Get context from all sources
-        github_context = mcp.get_github_context()
+        github_context = get_github_context()
+        context_manager.add_github_context(github_context)
+        
         rag_context = rag.get_context()
+        context_manager.add_rag_context(rag_context)
+
+        # Add user message to context
+        context_manager.add_user_message(message.message)
 
         # Search RAG content for relevant information
         rag_search = rag.search_content(message.message)
         rag_data = rag_search["content"] if rag_search["found"] else "No specific information found in the records."
 
-        # Create system message
+        # Get relevant memories
+        relevant_memories = memory_manager.get_relevant_memories(message.message)
+
+        # Create system message with repository information
+        repo_info = ""
+        for repo in github_context["repositories"]:
+            repo_info += f"\nRepository: {repo['name']}\n"
+            repo_info += f"Description: {repo['description']}\n"
+            repo_info += f"Language: {repo['language']}\n"
+            if repo['readme']:
+                repo_info += f"README Preview: {repo['readme'][:200]}...\n"
+            repo_info += "---\n"
+
         system_message = f"""Hi! I'm Dhurkesh's personal assistant. I have access to his information and can help answer questions about him.
 
         Here's what I know about Dhurkesh:
         {rag_data}
 
-        Additional Information:
-        {github_context}
+        Repository Information:
+        {repo_info}
+
+        Recent Activity:
+        {', '.join(github_context['recent_activity'])}
         
         I can help you with:
         - Information about Dhurkesh's background and experience
@@ -83,6 +108,13 @@ async def chat(message: ChatMessage):
         response_text = chat_completion.choices[0].message.content
         response_html = markdown.markdown(response_text)
 
+        # Add assistant response to context
+        context_manager.add_assistant_message(response_text)
+
+        # Store important information in memory
+        if "project" in message.message.lower():
+            memory_manager.add_important_fact(f"User asked about projects: {message.message}")
+
         return {"response": response_html}
 
     except Exception as e:
@@ -96,21 +128,42 @@ async def websocket_endpoint(websocket: WebSocket):
             message = await websocket.receive_text()
             
             # Get context from all sources
-            github_context = mcp.get_github_context()
+            github_context = get_github_context()
+            context_manager.add_github_context(github_context)
+            
             rag_context = rag.get_context()
+            context_manager.add_rag_context(rag_context)
+
+            # Add user message to context
+            context_manager.add_user_message(message)
 
             # Search RAG content for relevant information
             rag_search = rag.search_content(message)
             rag_data = rag_search["content"] if rag_search["found"] else "No specific information found in the records."
 
-            # Create system message
+            # Get relevant memories
+            relevant_memories = memory_manager.get_relevant_memories(message)
+
+            # Create system message with repository information
+            repo_info = ""
+            for repo in github_context["repositories"]:
+                repo_info += f"\nRepository: {repo['name']}\n"
+                repo_info += f"Description: {repo['description']}\n"
+                repo_info += f"Language: {repo['language']}\n"
+                if repo['readme']:
+                    repo_info += f"README Preview: {repo['readme'][:200]}...\n"
+                repo_info += "---\n"
+
             system_message = f"""Hi! I'm Dhurkesh's personal assistant. I have access to his information and can help answer questions about him.
 
             Here's what I know about Dhurkesh:
             {rag_data}
 
-            Additional Information:
-            {github_context}
+            Repository Information:
+            {repo_info}
+
+            Recent Activity:
+            {', '.join(github_context['recent_activity'])}
             
             I can help you with:
             - Information about Dhurkesh's background and experience
@@ -141,6 +194,13 @@ async def websocket_endpoint(websocket: WebSocket):
             response_text = chat_completion.choices[0].message.content
             response_html = markdown.markdown(response_text)
 
+            # Add assistant response to context
+            context_manager.add_assistant_message(response_text)
+
+            # Store important information in memory
+            if "project" in message.lower():
+                memory_manager.add_important_fact(f"User asked about projects: {message}")
+
             await websocket.send_text(response_html)
     except Exception as e:
         await websocket.close()
@@ -148,14 +208,47 @@ async def websocket_endpoint(websocket: WebSocket):
 def get_github_context():
     token = os.getenv("GITHUB_TOKEN")
     username = os.getenv("GITHUB_USER")
-    headers = {"Authorization": f"Bearer {token}"}
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Accept": "application/vnd.github.v3+json"
+    }
     
     # Get user repositories
     repos_response = requests.get(
         f"https://api.github.com/users/{username}/repos",
         headers=headers
     )
-    repos = [repo["name"] for repo in repos_response.json()] if repos_response.ok else []
+    repos_data = repos_response.json() if repos_response.ok else []
+    
+    # Process each repository
+    repos_info = []
+    for repo in repos_data:
+        repo_name = repo["name"]
+        
+        # Get README content
+        readme_response = requests.get(
+            f"https://api.github.com/repos/{username}/{repo_name}/readme",
+            headers=headers
+        )
+        
+        readme_content = ""
+        if readme_response.ok:
+            import base64
+            readme_content = base64.b64decode(readme_response.json()["content"]).decode("utf-8")
+        
+        # Get repository details
+        repo_info = {
+            "name": repo_name,
+            "description": repo.get("description", ""),
+            "language": repo.get("language", ""),
+            "stars": repo.get("stargazers_count", 0),
+            "forks": repo.get("forks_count", 0),
+            "readme": readme_content,
+            "url": repo.get("html_url", ""),
+            "created_at": repo.get("created_at", ""),
+            "updated_at": repo.get("updated_at", "")
+        }
+        repos_info.append(repo_info)
     
     # Get user activity
     events_response = requests.get(
@@ -166,6 +259,6 @@ def get_github_context():
     
     return {
         "username": username,
-        "repositories": repos,
+        "repositories": repos_info,
         "recent_activity": events
     }
