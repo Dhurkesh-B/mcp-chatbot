@@ -7,3 +7,4 @@ python-dotenv
 langchain-openai
 python-multipart
 markdown
+jinja2
