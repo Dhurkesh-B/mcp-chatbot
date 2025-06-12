@@ -31,13 +31,23 @@
         let ws = null;
 
         function connectWebSocket() {
-            ws = new WebSocket(`ws://${window.location.host}/ws`);
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
             
+            ws.onopen = function() {
+                console.log('WebSocket connection established');
+            };
+
             ws.onmessage = function(event) {
                 addMessage(event.data, 'assistant');
             };
 
+            ws.onerror = function(error) {
+                console.error('WebSocket error:', error);
+            };
+
             ws.onclose = function() {
+                console.log('WebSocket connection closed. Reconnecting...');
                 setTimeout(connectWebSocket, 1000);
             };
         }
@@ -52,10 +62,12 @@
 
         function sendMessage() {
             const message = messageInput.value.trim();
-            if (message) {
+            if (message && ws && ws.readyState === WebSocket.OPEN) {
                 addMessage(message, 'user');
                 ws.send(message);
                 messageInput.value = '';
+            } else {
+                console.error('WebSocket is not connected');
             }
         }
 
