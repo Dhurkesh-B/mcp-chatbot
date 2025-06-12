@@ -1,0 +1,27 @@
+{
+    "version": 2,
+    "builds": [
+        {
+            "src": "app/main.py",
+            "use": "@vercel/python",
+            "config": {
+                "runtime": "python3.9",
+                "buildCommand": "pip install -r requirements.txt",
+                "devCommand": "uvicorn app.main:app --reload",
+                "includeFiles": [
+                    "mcp/**",
+                    "static/**",
+                    "templates/**",
+                    "config/**",
+                    "rag_integration.py"
+                ]
+            }
+        }
+    ],
+    "routes": [
+        {
+            "src": "/(.*)",
+            "dest": "app/main.py"
+        }
+    ]
+} 
