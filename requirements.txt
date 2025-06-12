@@ -1,5 +1,5 @@
 fastapi
-uvicorn
+uvicorn[standard]
 pydantic
 groq
 requests
@@ -8,3 +8,4 @@ langchain-openai
 python-multipart
 markdown
 jinja2
+websockets
