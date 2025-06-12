@@ -7,6 +7,12 @@ from pydantic import BaseModel
 from groq import Groq
 import requests
 from dotenv import load_dotenv
+import sys
+import os
+
+# Add the parent directory to the Python path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from mcp.protocol import MCPProtocol
 from mcp.context import ContextManager
 from mcp.memory import MemoryManager
