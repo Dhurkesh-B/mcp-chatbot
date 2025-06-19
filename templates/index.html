@@ -6,6 +6,7 @@
     <title>Dhurkesh's Assistant</title>
     <link rel="stylesheet" href="{{ url_for('static', path='/styles.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.5.0/github-markdown.min.css">
+    <script src="https://unpkg.com/@dotlottie/player-component@2.7.12/dist/dotlottie-player.mjs" type="module"></script>
 </head>
 <body>
     <div class="chat-container">
@@ -29,6 +30,7 @@
         const messageInput = document.getElementById('message-input');
         const sendButton = document.getElementById('send-button');
         let ws = null;
+        let typingIndicator = null;
 
         function connectWebSocket() {
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -39,6 +41,7 @@
             };
 
             ws.onmessage = function(event) {
+                removeTypingIndicator();
                 addMessage(event.data, 'assistant');
             };
 
@@ -60,12 +63,32 @@
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
+        function showTypingIndicator() {
+            removeTypingIndicator(); // Ensure only one indicator
+            typingIndicator = document.createElement('div');
+            typingIndicator.id = 'lottie-typing-indicator';
+            typingIndicator.innerHTML = `
+                <dotlottie-player src="https://lottie.host/1deeb259-89f2-48e0-9ac4-11f8393c61c7/20dqyCTmG6.lottie" background="transparent" speed="1" style="width: 85px; height: 85px" loop autoplay muted></dotlottie-player>
+            `;
+            chatMessages.appendChild(typingIndicator);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function removeTypingIndicator() {
+            const indicator = document.getElementById('lottie-typing-indicator');
+            if (indicator) {
+                indicator.remove();
+            }
+            typingIndicator = null;
+        }
+
         function sendMessage() {
             const message = messageInput.value.trim();
             if (message && ws && ws.readyState === WebSocket.OPEN) {
                 addMessage(message, 'user');
                 ws.send(message);
                 messageInput.value = '';
+                showTypingIndicator();
             } else {
                 console.error('WebSocket is not connected');
             }
