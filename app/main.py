@@ -98,7 +98,7 @@ async def chat(message: ChatMessage):
 
         # Generate response with Groq
         chat_completion = groq_client.chat.completions.create(
-            model="llama3-70b-8192",
+            model="llama-3.1-8b-instant",
             messages=[
                 {
                     "role": "system",
@@ -188,7 +188,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
                 # Generate response with Groq
                 chat_completion = groq_client.chat.completions.create(
-                    model="llama3-70b-8192",
+                    model="llama-3.1-8b-instant",
                     messages=[
                         {
                             "role": "system",
